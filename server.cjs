@@ -6,8 +6,27 @@ const cors = require("cors");
 const crypto = require("crypto");
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Permit requests from the local development frontend only.
+      if (origin && allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origin not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  }),
+);
+
+app.use(express.json({ limit: "10kb" }));
 
 const MODEM_IP = process.env.MODEM_IP;
 const PLAIN_PASSWORD = process.env.MODEM_PASSWORD;
@@ -72,7 +91,7 @@ async function fetchTokenAutomatically() {
 
     console.log(`SPECTRS: Verified Challenge Parameters -> LD: ${LD}`);
 
-    // Compute the ZTE Complex SHA-256 Hash
+    // Compute the SHA-256 Hash
     const firstHash = sha256(PLAIN_PASSWORD).toUpperCase();
     const finalPasswordHash = sha256(firstHash + LD).toUpperCase();
 
@@ -213,6 +232,27 @@ function queryModemMetricViaSocket(cmd, stok) {
   });
 }
 
+const allowedHosts = new Set([
+  "127.0.0.1:4000",
+  "localhost:4000",
+]);
+
+app.use("/api", (req, res, next) => {
+  // Accept only requests addressed to the expected local API host.
+  if (!allowedHosts.has(req.get("host"))) {
+    return res.status(403).json({ error: "Invalid host" });
+  }
+
+  // Browser requests should originate from the local frontend.
+  const origin = req.get("origin");
+
+  if (origin && !allowedOrigins.has(origin)) {
+    return res.status(403).json({ error: "Origin not allowed" });
+  }
+
+  next();
+});
+
 app.post("/api/telemetry", async (req, res) => {
   try {
     if (!automatedStok) {
@@ -285,6 +325,9 @@ app.post("/api/telemetry", async (req, res) => {
   }
 });
 
-app.listen(4000, () =>
-  console.log("SPECTRS Native Engine active on port 4000"),
-);
+const PORT = Number(process.env.PORT) || 4000;
+const HOST = "127.0.0.1";
+
+app.listen(PORT, HOST, () => {
+  console.log(`SPECTRS Native Engine active at http://${HOST}:${PORT}`);
+});
