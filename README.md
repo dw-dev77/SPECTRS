@@ -1,5 +1,4 @@
 # SPECTRS
-**Spectrum Passive Emergency, Crisis & Tactical Response System**
 
 ![Status](https://img.shields.io/badge/Status-v1.0.0-emerald)
 ![Runtime](https://img.shields.io/badge/Runtime-Node.js-blue)
