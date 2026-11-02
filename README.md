@@ -4,6 +4,8 @@
 ![Runtime](https://img.shields.io/badge/Runtime-Node.js-blue)
 ![Domain](https://img.shields.io/badge/Domain-RF%20Awareness%20%7C%20Resilience%20%7C%20Tactical%20Systems-purple)
 
+![SPECTRS](screenshots/SPECTRS.jpg)
+
 ## Executive Summary
 
 **SPECTRS** is an experimental RF awareness, cellular infrastructure monitoring, and resilient communications framework designed around operation in degraded, contested, and infrastructure-denied environments.
